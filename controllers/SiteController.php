@@ -1,5 +1,4 @@
 <?php
-
 namespace app\controllers;
 
 use Yii;
@@ -12,6 +11,7 @@ use app\models\ContactForm;
 
 class SiteController extends Controller
 {
+
     /**
      * {@inheritdoc}
      */
@@ -82,7 +82,7 @@ class SiteController extends Controller
 
         $model->password = '';
         return $this->render('login', [
-            'model' => $model,
+                'model' => $model,
         ]);
     }
 
@@ -97,25 +97,40 @@ class SiteController extends Controller
 
         return $this->goHome();
     }
-    
-    public function actionMoney() {
+
+    public function actionMoney()
+    {
+
+        if (Yii::$app->user->isGuest) {
+            \Yii::$app->session->setFlash('warning', 'You should sign in!', false);
+
+            return $this->redirect(['login']);
+        }
+
         if (file_exists('/var/www/html/basic/web/stat/site-money.html')) {
             return file_get_contents('/var/www/html/basic/web/stat/site-money.html');
         }
-        
+
         $this->layout = 'free';
         $cache = Yii::$app->cache;
-        // Формируем ключ
         $key = 'money';
-        // Пробуем извлечь категории из кэша.
         $money = $cache->get($key);
+
+
         if ($money === false) {
-          //Если  нет в кэше, вычисляем заново
-          $money = \app\models\T::find()->where(['idt'=>1])->one();
-          // Сохраняем значение $categories в кэше по ключу. Данные можно получить в следующий раз.
-          $cache->set($key, $money);
-        }
+            $xml = file_get_contents('http://www.cbr.ru/scripts/XML_daily.asp'); 
+            
+            $data = \bobchengbin\Yii2XmlRequestParser\Xml2Array::go($xml, '1', 'attribute');
+            echo "<pre>";
+            var_dump($data ); exit;
+            
+//          $money = \app\models\T::find()->where(['idt'=>1])->one();
         
+            $cache->set($key, $money);
+        }
+
+
+
         return $this->render('money', ['data' => $money->data]);
     }
 
@@ -133,7 +148,7 @@ class SiteController extends Controller
             return $this->refresh();
         }
         return $this->render('contact', [
-            'model' => $model,
+                'model' => $model,
         ]);
     }
 
