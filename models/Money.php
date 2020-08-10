@@ -8,7 +8,7 @@ use Yii;
  * This is the model class for table "money".
  *
  * @property int $id_money
- * @property string $money_name
+ * @property string $money_Name
  */
 class Money extends \yii\db\ActiveRecord
 {
@@ -26,8 +26,8 @@ class Money extends \yii\db\ActiveRecord
     public function rules()
     {
         return [
-            [['money_name'], 'required'],
-            [['money_name'], 'string', 'max' => 45],
+            [['money_Name', 'money_CharCode', 'money_attr', 'money_NumCode', 'money_Nominal'], 'required'],
+            [['money_Name', 'money_CharCode', 'money_attr', 'money_NumCode', 'money_Nominal'], 'string', 'max' => 45]
         ];
     }
 
@@ -38,7 +38,10 @@ class Money extends \yii\db\ActiveRecord
     {
         return [
             'id_money' => Yii::t('app', 'Id Money'),
-            'money_name' => Yii::t('app', 'Money Name'),
+            'money_Name' => Yii::t('app', 'Money Name'),
+            'money_CharCode' => Yii::t('app', 'CharCode'),
+            'money_Nominal' => Yii::t('app', 'Nominal'),
+            'money_attr' => Yii::t('app', 'Attr'),
         ];
     }
 }

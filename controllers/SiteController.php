@@ -8,6 +8,7 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use \app\models\Money;
 
 class SiteController extends Controller
 {
@@ -107,31 +108,67 @@ class SiteController extends Controller
             return $this->redirect(['login']);
         }
 
-        if (file_exists('/var/www/html/basic/web/stat/site-money.html')) {
-            return file_get_contents('/var/www/html/basic/web/stat/site-money.html');
+        if (file_exists(\Yii::getAlias('@webroot') . '/stat/site-money.html')) {
+            return file_get_contents(\Yii::getAlias('@webroot') .'/stat/site-money.html');
         }
-
+        
         $this->layout = 'free';
         $cache = Yii::$app->cache;
-        $key = 'money';
-        $money = $cache->get($key);
-
-
-        if ($money === false) {
-            $xml = file_get_contents('http://www.cbr.ru/scripts/XML_daily.asp'); 
-            
-            $data = \bobchengbin\Yii2XmlRequestParser\Xml2Array::go($xml, '1', 'attribute');
-            echo "<pre>";
-            var_dump($data ); exit;
-            
-//          $money = \app\models\T::find()->where(['idt'=>1])->one();
         
-            $cache->set($key, $money);
+        $xml = $cache->get('xml_money');
+        
+        if (empty($xml)) {
+            $xml = file_get_contents('http://www.cbr.ru/scripts/XML_daily.asp'); 
+            $cache->set('xml_money', $xml);
+        }
+        
+        $money = $cache->get('money');
+
+        if (empty($money)) { 
+            $money = \bobchengbin\Yii2XmlRequestParser\Xml2Array::go($xml, '1', 'attribute');
+            $cache->set('money', $money);
+        }
+        $tomorrow = date_modify(new \DateTime(), '+1 day');
+        $tomorrow = date_format($tomorrow, 'd.m.Y');
+        $date = $money['ValCurs']['attr']['Date'];
+        foreach ($money['ValCurs']['Valute'] as $valute) {
+
+            $find = Money::find()->where('money_Name=:valute',[':valute' => $valute['Name']['value']])
+                    ->one();
+            if (!empty($find)) {
+                $money = $find;
+            } else {
+                $money = new Money();
+                $money->money_attr = $valute['attr']['ID'];
+                $money->money_NumCode = $valute['NumCode']['value'];
+                $money->money_CharCode = $valute['CharCode']['value'];
+                $money->money_Nominal = $valute['Nominal']['value'];
+                $money->money_Name = $valute['Name']['value'];
+                $money->save();
+            }
+            
+            $count = new \app\models\MoneyCount();
+            $count->count = $valute['Value']['value'];
+            $count->id_money = (string) $money->id_money;
+            $count->data = $date;
+            $count->save();
+        }
+       
+        
+        $money = Money::find()->select('money.*, money_count.*')
+                ->leftJoin('money_count', 'money_count.id_money=money.id_money')
+                ->where('money_count.data=:date', [':date' => date('d.m.Y')])
+                ->orWhere('money_count.data=:date', [':date' => $tomorrow])
+                ->asArray()->all();
+        
+        if (empty($money)) {
+            $cache->set('money', false);
+            $cache->set('xml_money', false);
+            
+            return $this->redirect(['money']);
         }
 
-
-
-        return $this->render('money', ['data' => $money->data]);
+        return $this->render('money', ['money' => $money]);
     }
 
     /**

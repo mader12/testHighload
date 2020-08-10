@@ -24,19 +24,30 @@ DROP TABLE IF EXISTS `money`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `money` (
   `id_money` int(11) NOT NULL AUTO_INCREMENT,
-  `money_name` varchar(45) NOT NULL,
+  `money_attr` varchar(45) NOT NULL,
+  `money_NumCode` varchar(45) NOT NULL,
+  `money_CharCode` varchar(45) NOT NULL,
+  `money_Nominal` varchar(45) NOT NULL,
+  `money_Name` varchar(45) NOT NULL,
   PRIMARY KEY (`id_money`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `money`
+-- Table structure for table `money_count`
 --
 
-LOCK TABLES `money` WRITE;
-/*!40000 ALTER TABLE `money` DISABLE KEYS */;
-/*!40000 ALTER TABLE `money` ENABLE KEYS */;
-UNLOCK TABLES;
+DROP TABLE IF EXISTS `money_count`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `money_count` (
+  `id_mc` int(11) NOT NULL AUTO_INCREMENT,
+  `count` varchar(45) NOT NULL,
+  `data` varchar(45) NOT NULL,
+  `id_money` varchar(45) NOT NULL,
+  PRIMARY KEY (`id_mc`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -47,4 +58,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-08-10 14:54:07
+-- Dump completed on 2020-08-10 16:48:00
